@@ -14,7 +14,7 @@ const RoomList: FC = () => {
 
     return (
         <RoomListStyled>
-            {roomList.map(room => <RoomListItem {...room}/>)}
+            {roomList.map(room => <RoomListItem {...room} key={`${room.id}-${room.name}-${room.count}`}/>)}
         </RoomListStyled>
     );
 };
