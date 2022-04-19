@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 const RoomPageStyled = styled.section`
-  width: 700px;
+  width: 800px;
   height: 100vh;
   
   display: flex;
