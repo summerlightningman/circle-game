@@ -1,9 +1,9 @@
 class App {
     constructor() {
         this.roomList = [
-            {name: 'First', users: []},
-            {name: 'Second', users: []},
-            {name: 'Third', users: []},
+            {id: 1, name: 'First', users: []},
+            {id: 2, name: 'Second', users: []},
+            {id: 3, name: 'Third', users: []},
         ]
     }
 
@@ -14,7 +14,7 @@ class App {
 
     listRooms = (req, res) => {
         res.type('application/json');
-        const roomInfos = this.roomList.map(room => ({name: room.name, userCount: room.users.length}));
+        const roomInfos = this.roomList.map(room => ({id: room.id, name: room.name, userCount: room.users.length}));
         return res.json(roomInfos);
     }
 
