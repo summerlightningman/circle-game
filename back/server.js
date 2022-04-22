@@ -17,8 +17,6 @@ const io = new Server(server, {
 });
 
 app.use(cors());
-
-app.get('/', App.helloWorld);
 app.get('/rooms', App.listRooms);
 
 io.on('connection', App.onSocketConnection);

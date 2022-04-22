@@ -1,30 +1,66 @@
-import {Player, PlayerColor, PlayerList} from "./types/player";
+import {Player, PlayerColor, PlayerID, PlayerList} from "./types/player";
+import {RoomID} from "./types/room";
+import {Socket} from "socket.io-client";
+
+interface PlayerData {
+    roomId: RoomID
+}
 
 class GameController {
     ctx: CanvasRenderingContext2D;
-    player: Player;
     playerList: PlayerList;
+    player: Player;
 
     width: number;
     height: number;
     dPlayerX: number;
     dPlayerY: number;
 
-    constructor(canv: HTMLCanvasElement, player: Player, playerList: PlayerList) {
-        this.ctx = canv.getContext('2d')!;
-        this.player = player;
-        this.playerList = playerList;
+    socket: Socket;
 
+
+    constructor(socket: Socket, canvas: HTMLCanvasElement, data: PlayerData) {
+        this.ctx = canvas.getContext('2d')!;
+        this.playerList = [];
+        this.player = {
+            id: '-1',
+            name: 'undefined',
+            color: 'rgb(0, 0, 0)',
+            radius: 10,
+            x: 10,
+            y: 10
+        };
         this.dPlayerX = this.dPlayerY = 0;
 
-        canv.width = this.width = canv.offsetWidth;
-        canv.height = this.height = canv.offsetHeight;
+        canvas.width = this.width = canvas.offsetWidth;
+        canvas.height = this.height = canvas.offsetHeight;
 
-        console.log(playerList);
+
+        this.socket = socket;
+        this.socket.on('connect', () => {
+            this.socket.emit('join', data);
+        })
+        this.socket.on('hello', player => this.player = player);
+        this.socket.on('playerList', this.setPlayerList);
+        this.socket.on('playerConnected', this.addPlayerToList);
+        this.socket.on('left', this.removePlayerFromList);
 
         this.setTextParameters();
-        this.runGameCycle();
+        this.runGameCycle(() => this.socket.emit('join', data));
     }
+
+    setPlayerList = (list: PlayerList) => {
+        this.playerList = list;
+    }
+
+    addPlayerToList = (player: Player) => {
+        this.setPlayerList([...this.playerList, player]);
+    }
+
+    removePlayerFromList = (playerId: PlayerID) => {
+        this.setPlayerList(this.playerList.filter(_ => _.id !== playerId));
+    };
+
 
     handleKeyDown = (e: KeyboardEvent) => {
         switch (e.key) {
@@ -60,13 +96,22 @@ class GameController {
         }
     }
 
-    private runGameCycle = () => setInterval(() => {
-        this.drawBackground();
-        this.player.x += this.dPlayerX;
-        this.player.y += this.dPlayerY;
-        this.drawPlayer(this.player);
-        this.playerList.forEach(this.drawPlayer);
-    }, 10);
+    private runGameCycle = (rejoin: () => void) => {
+        const interval = setInterval(() => {
+            if (this.player.name === 'undefined') {
+                rejoin();
+            }
+            this.drawBackground();
+            this.player.x += this.dPlayerX;
+            this.player.y += this.dPlayerY;
+            this.playerList.forEach(this.drawPlayer);
+            this.drawPlayer(this.player);
+        }, 10);
+        this.runGameCycle = () => {
+            clearInterval(interval);
+            return this.runGameCycle(rejoin)
+        }
+    };
 
     private setTextParameters = () => {
         this.ctx.font = 'normal 32px Arial';
@@ -88,12 +133,12 @@ class GameController {
         return `rgb(${255 - +r}, ${255 - +g}, ${255 - +b})`
     }
 
-    drawPlayer = (player: Player) => {
+    private drawPlayer = (player: Player) => {
         this.ctx.beginPath();
         this.ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
         this.ctx.fillStyle = player.color;
         this.ctx.fill();
-        this.ctx.fillStyle = GameController.reverseColor(this.player.color);
+        this.ctx.fillStyle = GameController.reverseColor(player.color);
         this.ctx.fillText(player.name, player.x, player.y);
         if (this.player.name === player.name) {
             this.ctx.strokeStyle = GameController.reverseColor(this.player.color);
@@ -101,6 +146,8 @@ class GameController {
         }
         this.ctx.closePath();
     }
+
+
 }
 
 export default GameController

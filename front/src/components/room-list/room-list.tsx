@@ -6,7 +6,7 @@ import {getRoomList} from "../../http";
 
 const RoomList: FC = () => {
     const [roomList, setRoomList] = useState<RoomListType>([]);
-
+    
     useEffect(() => {
         getRoomList()
             .then(setRoomList);

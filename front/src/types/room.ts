@@ -1,9 +1,9 @@
-export type RoomID = number;
+export type RoomID = string;
 export type RoomName = string;
 export type RoomUserCount = number;
 
 export interface Room {
-    id: number;
+    id: RoomID;
     name: RoomName,
     count: RoomUserCount
 }
