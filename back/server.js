@@ -19,6 +19,6 @@ const io = new Server(server, {
 app.use(cors());
 app.get('/rooms', App.listRooms);
 
-io.on('connection', App.onSocketConnection);
+io.on('connection', App.onSocketConnection(io));
 
 server.listen(port, () => console.log('Server was started at PORT ' + port));

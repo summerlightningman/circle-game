@@ -11,7 +11,13 @@ export interface Player {
     color: PlayerColor,
     radius: PlayerRadius;
     x: Coord,
-    y: Coord
+    y: Coord,
+    activeKeys: {
+        up: boolean,
+        down: boolean,
+        left: boolean,
+        right: boolean
+    }
 }
 
 export type PlayerList = Player[]
